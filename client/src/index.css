@@ -1,0 +1,105 @@
+@import 'tailwindcss';
+
+/*
+  TaskPilot design tokens.
+
+  The one rule that holds this interface together: colour is reserved for time
+  pressure. Structure, actions and progress are all monochrome ink, so the only
+  coloured things on screen are the deadlines that are actually running out.
+*/
+@theme {
+  /* Surfaces and ink */
+  --color-panel: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-ink: #111620;
+  --color-graphite: #59616f;
+  --color-mute: #8b93a1;
+  --color-rule: #e2e5ea;
+
+  /* The urgency scale — the only colour in the product */
+  --color-ontrack: #0e7c66;
+  --color-soon: #b26a00;
+  --color-urgent: #c2321b;
+  --color-ontrack-wash: #e7f2ef;
+  --color-soon-wash: #f8efdd;
+  --color-urgent-wash: #fbeae7;
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Instrument-panel radius: tight, not pill-shaped */
+  --radius-panel: 6px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-panel);
+    color: var(--color-graphite);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3 {
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* Every number in the product is tabular — readings, not prose. */
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Keyboard focus stays ink, never an urgency colour. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+}
+
+/* Eyebrow labels: the panel-legend voice used above each section. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+
+@keyframes tick-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tick-in {
+  animation: tick-in 0.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

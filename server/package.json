@@ -1,0 +1,27 @@
+{
+  "name": "taskpilot-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "TaskPilot REST API (Task 2) — Express over an in-memory store, gains PostgreSQL persistence in Task 3 and JWT auth + the AI planner in Task 4.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "oxlint"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "morgan": "^1.12.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "oxlint": "^1.80.0"
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "info": {
+    "name": "TaskPilot API",
+    "description": "TaskPilot REST API (Task 2). Set the `baseUrl` collection variable if your server runs somewhere other than http://localhost:4000/api. Requests marked (400) and (404) demonstrate validation and not-found handling.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "List courses",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Create course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"CS210\",\n  \"title\": \"Operating Systems\",\n  \"instructor\": \"Dr. V. Rao\",\n  \"credits\": 4\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Create course (invalid → 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"C\",\n  \"credits\": \"four\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+          }
+        },
+        {
+          "name": "Get course by id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/courses/c_1", "host": ["{{baseUrl}}"], "path": ["courses", "c_1"] }
+          }
+        },
+        {
+          "name": "Get course (missing → 404)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/courses/c_999", "host": ["{{baseUrl}}"], "path": ["courses", "c_999"] }
+          }
+        },
+        {
+          "name": "Update course",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"credits\": 3\n}" },
+            "url": { "raw": "{{baseUrl}}/courses/c_1", "host": ["{{baseUrl}}"], "path": ["courses", "c_1"] }
+          }
+        },
+        {
+          "name": "Delete course",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/courses/c_4", "host": ["{{baseUrl}}"], "path": ["courses", "c_4"] }
+          }
+        },
+        {
+          "name": "List tasks for a course",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/courses/c_1/tasks", "host": ["{{baseUrl}}"], "path": ["courses", "c_1", "tasks"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List tasks",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+          }
+        },
+        {
+          "name": "List tasks (filtered)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks?course=c_1&status=todo&q=tree",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [
+                { "key": "course", "value": "c_1" },
+                { "key": "status", "value": "todo" },
+                { "key": "q", "value": "tree" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"c_1\",\n  \"title\": \"Prepare OS lab demo\",\n  \"priority\": \"high\",\n  \"dueDate\": \"2026-10-01T00:00:00.000Z\",\n  \"description\": \"Set up the two-VM demo for the scheduling lab.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+          }
+        },
+        {
+          "name": "Create task (unknown course → 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"c_999\",\n  \"title\": \"Orphan task\",\n  \"dueDate\": \"2026-10-01T00:00:00.000Z\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+          }
+        },
+        {
+          "name": "Get task by id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tasks/t_1", "host": ["{{baseUrl}}"], "path": ["tasks", "t_1"] }
+          }
+        },
+        {
+          "name": "Get task (missing → 404)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tasks/does-not-exist", "host": ["{{baseUrl}}"], "path": ["tasks", "does-not-exist"] }
+          }
+        },
+        {
+          "name": "Update task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"done\"\n}" },
+            "url": { "raw": "{{baseUrl}}/tasks/t_1", "host": ["{{baseUrl}}"], "path": ["tasks", "t_1"] }
+          }
+        },
+        {
+          "name": "Update task (empty body → 400)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/tasks/t_1", "host": ["{{baseUrl}}"], "path": ["tasks", "t_1"] }
+          }
+        },
+        {
+          "name": "Delete task",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/tasks/t_2", "host": ["{{baseUrl}}"], "path": ["tasks", "t_2"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get me",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          }
+        },
+        {
+          "name": "Update me",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"term\": \"Semester 6\"\n}" },
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activity",
+      "item": [
+        {
+          "name": "List activity",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/activity", "host": ["{{baseUrl}}"], "path": ["activity"] }
+          }
+        }
+      ]
+    }
+  ]
+}

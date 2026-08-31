@@ -60,10 +60,20 @@ day is deadline clustering — the thing a list view will never show you.
 - **Accessibility** — skip link, `aria-current` nav state, labelled controls,
   visible keyboard focus, `prefers-reduced-motion` respected
 
+### Task 2 — Backend API (complete)
+
+- **REST API** in `server/` — Express, with `courses` and `tasks` full CRUD,
+  plus `users/me` and `activity`
+- **Filtering** — `GET /tasks?course=&status=&q=` mirrors the Tasks page
+- **Validation** — every write body is checked with zod; a bad body returns
+  `400` with per-field details, and an unknown `courseId` is a `400`, not an orphan
+- **Consistent envelope** — `{ data }` on success, `{ error: { message, code,
+  details? } }` on failure, with correct status codes throughout
+- **Docs** — endpoint reference and a Postman collection in
+  [`docs/api/`](docs/api/README.md)
+
 ### Planned
 
-- Task 2 — REST API for users, courses and tasks with validation and centralised
-  error handling
 - Task 3 — PostgreSQL persistence via Prisma, with modelled relationships
 - Task 4 — JWT auth and protected routes, plus the **AI Assignment Planner**:
   paste an assignment brief, get subtasks with suggested milestone dates and
@@ -77,7 +87,7 @@ day is deadline clustering — the thing a list view will never show you.
 | -------- | ------------------------------------------- |
 | Frontend | React 19, Vite 8, Tailwind CSS 4, React Router 7 |
 | Icons    | Lucide                                      |
-| Backend  | Node.js + Express _(Task 2)_                |
+| Backend  | Node.js + Express, zod validation           |
 | Database | PostgreSQL + Prisma _(Task 3)_              |
 | AI       | Claude API _(Task 4)_                       |
 
@@ -98,6 +108,21 @@ npm run dev
 ```
 
 The app runs at `http://localhost:5173`.
+
+### Run the API (Task 2)
+
+The REST API is a separate service in `server/`:
+
+```bash
+cd TaskPilot/server
+npm install
+npm run dev
+```
+
+It listens on `http://localhost:4000/api`. The Task 1 frontend runs on mock data
+and does not need the API — the two are wired together in Task 4. See
+[`docs/api/`](docs/api/README.md) for the full endpoint reference and a Postman
+collection.
 
 ### Environment variables
 
@@ -140,10 +165,17 @@ TaskPilot/
 │       ├── hooks/              # useAsync — loading/error/retry lifecycle
 │       ├── lib/                # dates (urgency), selectors, api client, cn
 │       └── data/               # mock data, shaped like the Task 2 API response
-├── server/                     # Express API (Task 2)
+├── server/                     # Express REST API (Task 2)
+│   └── src/
+│       ├── routes/             # one router per resource, mounted under /api
+│       ├── controllers/        # request → store → response
+│       ├── schemas/            # zod validation per resource
+│       ├── middleware/         # validate, notFound, errorHandler
+│       ├── lib/                # ApiError, asyncHandler, response helpers
+│       └── data/               # seed + in-memory store (Prisma in Task 3)
 ├── docs/
 │   ├── screenshots/
-│   └── api/                    # Postman collection / OpenAPI spec (Task 2)
+│   └── api/                    # endpoint reference + Postman collection
 ├── .env.example
 └── README.md
 ```

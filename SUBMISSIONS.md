@@ -7,7 +7,7 @@ independently of later work.
 | Task | Status | Repository URL to submit | LinkedIn |
 | ---- | ------ | ------------------------ | ------ |
 | 1 — Modern Frontend Development | Completed | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Post`](https://lnkd.in/p/dY2FPymM) |
-| 2 — Backend & REST API | Not started | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2` | — |
+| 2 — Backend & REST API | In progress | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2` | — |
 | 3 — Database Integration | Not started | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3` | — |
 | 4 — Final Full-Stack Application | Not started | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4` | — |
 
@@ -38,13 +38,13 @@ loading skeleton, and search + filter working together.
 
 ## Task 2 — Backend & REST API
 
-- [ ] Express server with structured routing
-- [ ] CRUD endpoints for users, courses, tasks
-- [ ] Request validation
-- [ ] Centralised error handling with correct status codes
-- [ ] Consistent JSON response shape
-- [ ] API documentation (`docs/api/`)
-- [ ] Screenshots / Postman collection
+- [x] Express server with structured routing
+- [x] CRUD endpoints for users, courses, tasks
+- [x] Request validation
+- [x] Centralised error handling with correct status codes
+- [x] Consistent JSON response shape
+- [x] API documentation (`docs/api/`)
+- [x] Screenshots / Postman collection
 - [ ] Demo video
 - [ ] Tagged and released
 

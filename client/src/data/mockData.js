@@ -58,6 +58,8 @@ export const tasks = [
     status: 'in-progress',
     priority: 'high',
     dueDate: dateFromToday(1),
+    description:
+      'Implement left, right, and both double rotations so the tree rebalances on insert and delete. Add a height-check assertion after each operation to catch imbalance early.',
   },
   {
     id: 't_2',
@@ -66,6 +68,8 @@ export const tasks = [
     status: 'todo',
     priority: 'medium',
     dueDate: dateFromToday(-2),
+    description:
+      'Benchmark BFS and DFS across the provided graph set and write up the timing comparison, with a short analysis of why the results differ by graph shape.',
   },
   {
     id: 't_3',
@@ -74,6 +78,8 @@ export const tasks = [
     status: 'done',
     priority: 'low',
     dueDate: dateFromToday(-5),
+    description:
+      'Read the binary search tree chapter and note the invariants before the AVL lecture.',
   },
   {
     id: 't_4',
@@ -82,6 +88,8 @@ export const tasks = [
     status: 'todo',
     priority: 'high',
     dueDate: dateFromToday(4),
+    description:
+      'Work through problems 1–8 on eigenvalues and eigenvectors, showing the characteristic polynomial for each matrix.',
   },
   {
     id: 't_5',
@@ -90,6 +98,8 @@ export const tasks = [
     status: 'todo',
     priority: 'medium',
     dueDate: dateFromToday(11),
+    description:
+      'Re-derive the Gram–Schmidt process by hand on a three-vector example ahead of Friday’s quiz.',
   },
   {
     id: 't_6',
@@ -98,6 +108,8 @@ export const tasks = [
     status: 'in-progress',
     priority: 'high',
     dueDate: dateFromToday(2),
+    description:
+      'Take the library schema from 1NF through to 3NF, listing the functional dependency removed at each step.',
   },
   {
     id: 't_7',
@@ -106,6 +118,8 @@ export const tasks = [
     status: 'todo',
     priority: 'medium',
     dueDate: dateFromToday(6),
+    description:
+      'Write the eight join queries from the practical sheet — inner, left, right, and full outer — against the sample database.',
   },
   {
     id: 't_8',
@@ -114,6 +128,8 @@ export const tasks = [
     status: 'done',
     priority: 'medium',
     dueDate: dateFromToday(-8),
+    description:
+      'Draw the entity-relationship diagram for the hostel allocation project, including cardinalities and any weak entities.',
   },
   {
     id: 't_9',
@@ -122,6 +138,8 @@ export const tasks = [
     status: 'todo',
     priority: 'high',
     dueDate: dateFromToday(9),
+    description:
+      'Draft the 2000-word report on national renewable energy policy with at least six cited sources.',
   },
   {
     id: 't_10',
@@ -130,6 +148,8 @@ export const tasks = [
     status: 'todo',
     priority: 'low',
     dueDate: dateFromToday(13),
+    description:
+      'Read two classmates’ report drafts and leave structured feedback on argument and evidence.',
   },
   {
     id: 't_11',
@@ -138,6 +158,8 @@ export const tasks = [
     status: 'todo',
     priority: 'medium',
     dueDate: dateFromToday(7),
+    description:
+      'Track down why range updates aren’t propagating, add a failing test case that reproduces it, then fix the lazy push-down.',
   },
   {
     id: 't_12',
@@ -146,6 +168,7 @@ export const tasks = [
     status: 'done',
     priority: 'low',
     dueDate: dateFromToday(-3),
+    description: 'Final check and submit tutorial sheet 4 on the course portal.',
   },
 ]
 

@@ -42,4 +42,17 @@ export const api = {
   getCourses: () => respond(courses),
   getTasks: () => respond(tasks),
   getActivity: () => respond(activity),
+
+  // Single assignment, the way GET /tasks/:id will behave in Task 2: a missing
+  // id is a genuine 404, not a transient failure, so it rejects with a flag the
+  // detail page uses to show "not found" instead of a retry button.
+  getTask: (id) => {
+    const task = tasks.find((t) => t.id === id)
+    if (!task) {
+      const err = new Error('That assignment could not be found.')
+      err.notFound = true
+      return Promise.reject(err)
+    }
+    return respond(task)
+  },
 }

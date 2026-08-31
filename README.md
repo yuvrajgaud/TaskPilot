@@ -14,7 +14,7 @@ Development Internship**.
 
 | Task | Scope | Release | Demo video | LinkedIn |
 | ---- | ----- | ------- | ---------- | -------- |
-| 1 — Modern Frontend | React dashboard, responsive, mock data | [`task-1`](../../releases/tag/task-1) | _pending_ | _pending_ |
+| 1 — Modern Frontend | React dashboard, responsive, mock data | [`task-1`](../../releases/tag/task-1) | _pending_ | [`Post`](https://www.linkedin.com/posts/yuvraj-vinod-gaud_fullstackdevelopment-react-nodejs-activity-7500281586588807169-ZIot?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAEOW4ZwBi5mW6xfr_5qeTCUO_26v9ZMDLrI) |
 | 2 — Backend & REST API | Express API for users, courses, tasks | _pending_ | _pending_ | _pending_ |
 | 3 — Database Integration | PostgreSQL + Prisma persistence | _pending_ | _pending_ | _pending_ |
 | 4 — Final Full-Stack App | Auth, integration, AI planner, deployed | _pending_ | _pending_ | _pending_ |

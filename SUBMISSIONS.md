@@ -4,7 +4,7 @@ Every task is submitted from this one repository. Each task has its own git tag
 and GitHub Release, so the code at submission time is frozen and reviewable
 independently of later work.
 
-| Task | Status | Repository URL to submit | Tagged |
+| Task | Status | Repository URL to submit | LinkedIn |
 | ---- | ------ | ------------------------ | ------ |
 | 1 — Modern Frontend Development | Completed | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Post`](https://lnkd.in/p/dY2FPymM) |
 | 2 — Backend & REST API | Not started | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2` | — |
@@ -29,7 +29,7 @@ independently of later work.
 - [x] Consistent design system
 - [x] Screenshots in README
 - [x] Demo video (2–3 min)
-- [] Tagged and released
+- [x] Tagged and released
 
 **Demo video must show:** resize to mobile on camera, the empty state, the
 loading skeleton, and search + filter working together.

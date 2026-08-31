@@ -50,6 +50,8 @@ day is deadline clustering — the thing a list view will never show you.
 - **Courses** — card grid with per-course progress and overdue counts
 - **Tasks** — sortable list with search, status filter, and per-course filter
   driven by the URL query string
+- **Assignment detail** — a single-assignment view with its full brief, a
+  coloured time-left reading, and the other assignments in the same course
 - **Profile** — user section with a semester summary
 - **Search and filter** across both courses and tasks
 - **Loading, empty, and error states** on every dynamic view — including

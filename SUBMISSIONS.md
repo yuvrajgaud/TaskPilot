@@ -27,9 +27,9 @@ independently of later work.
 - [x] Error state handling
 - [x] Reusable component structure
 - [x] Consistent design system
-- [ ] Screenshots in README
-- [ ] Demo video (2–3 min)
-- [ ] Tagged and released
+- [x] Screenshots in README
+- [x] Demo video (2–3 min)
+- [] Tagged and released
 
 **Demo video must show:** resize to mobile on camera, the empty state, the
 loading skeleton, and search + filter working together.

@@ -46,7 +46,7 @@ loading skeleton, and search + filter working together.
 - [x] API documentation (`docs/api/`)
 - [x] Screenshots / Postman collection
 - [x] Demo video
-- [ ] Tagged and released
+- [x] Tagged and released
 
 **Demo video must show:** a validation failure returning `400` with a clean
 error body, and a `404` on a missing resource. Most submissions only demo the

@@ -15,7 +15,7 @@ Development Internship**.
 | Task | Scope | Release | Demo video | LinkedIn |
 | ---- | ----- | ------- | ---------- | -------- |
 | 1 — Modern Frontend | React dashboard, responsive, mock data | [`task-1`](../../releases/tag/task-1) | [`Watch Demo`](https://drive.google.com/file/d/1sTDb_GyMZmjCKK99tLfIPM1-ssDgszKH/view?usp=sharing) | [`Post`](https://lnkd.in/p/dY2FPymM) |
-| 2 — Backend & REST API | Express API for users, courses, tasks | _pending_ | [`Watch Demo`](https://drive.google.com/file/d/1yV3P_roeZPKjbtFU-1SQEh7L3qzU2LP9/view?usp=drive_link) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
+| 2 — Backend & REST API | Express API for users, courses, tasks | [`task-2`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2) | [`Watch Demo`](https://drive.google.com/file/d/1yV3P_roeZPKjbtFU-1SQEh7L3qzU2LP9/view?usp=drive_link) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
 | 3 — Database Integration | PostgreSQL + Prisma persistence | _pending_ | _pending_ | _pending_ |
 | 4 — Final Full-Stack App | Auth, integration, AI planner, deployed | _pending_ | _pending_ | _pending_ |
 

@@ -7,9 +7,9 @@ independently of later work.
 | Task | Status | Repository URL to submit | LinkedIn |
 | ---- | ------ | ------------------------ | ------ |
 | 1 — Modern Frontend Development | Completed | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Post`](https://lnkd.in/p/dY2FPymM) |
-| 2 — Backend & REST API | In progress | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2` | [`Post`](https://lnkd.in/p/d-4Ez92u) |
-| 3 — Database Integration | Not started | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3` | — |
-| 4 — Final Full-Stack Application | Not started | `https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4` | — |
+| 2 — Backend & REST API | Completed | [`task-2`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
+| 3 — Database Integration | In progress | [`task-3`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3) | — |
+| 4 — Final Full-Stack Application | Not started | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | — |
 
 ---
 

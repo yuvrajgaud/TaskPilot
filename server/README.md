@@ -5,20 +5,43 @@ store, given real persistence in **Task 3** (PostgreSQL + Prisma), and secured
 with JWT auth plus the AI planner in **Task 4**.
 
 Full endpoint reference and an importable Postman collection live in
-[`../docs/api/`](../docs/api/README.md).
+[`../docs/api/`](../docs/api/README.md). The database model, schema diagram and
+design decisions live in [`../docs/db/`](../docs/db/README.md).
 
 ## Run
 
 ```bash
 cd server
 npm install
-npm run dev      # nodemon — restarts on change
+cp .env.example .env       # set DATABASE_URL (and DIRECT_URL) — see below
+npm run prisma:migrate     # create the tables
+npm run db:seed            # load sample data
+npm run dev                # nodemon — restarts on change
 # or: npm start
 ```
 
-Listens on `http://localhost:4000/api`. Task 2 needs no `.env`; the defaults in
-`.env.example` are enough. Copy it to `.env` only when you start overriding the
-port or, later, adding the database and API keys.
+Listens on `http://localhost:4000/api`. From Task 3 on, a `DATABASE_URL` is
+required — the server exits on startup with a clear message if it is missing.
+
+## Database (Task 3)
+
+Data lives in **PostgreSQL**, accessed through **Prisma**. Any Postgres works —
+a local install or a hosted one like Neon/Supabase — only the connection string
+changes.
+
+```bash
+npm run prisma:migrate     # prisma migrate dev — create/apply a migration
+npm run db:seed            # reset to the sample student, courses, tasks
+npm run prisma:studio      # browse the data in a GUI
+npm run prisma:generate    # regenerate the client after editing the schema
+```
+
+- **Schema:** `prisma/schema.prisma` — `User → Course → Task`, plus `Activity`.
+- **Migrations:** committed under `prisma/migrations/`.
+- **Config:** `DATABASE_URL` (pooled, app runtime) and `DIRECT_URL` (direct, for
+  migrations) come from `.env` only — never hard-coded. See
+  [`../docs/db/`](../docs/db/README.md) for the model, the diagram and the
+  design decisions.
 
 ## What it does
 
@@ -36,21 +59,26 @@ port or, later, adding the database and API keys.
 
 ```
 server/
+├── prisma/
+│   ├── schema.prisma       # data model: User, Course, Task, Activity
+│   ├── migrations/         # committed migration history
+│   └── seed.js             # loads the sample data
 ├── src/
-│   ├── index.js              # entry: starts the listener
-│   ├── app.js                # builds the Express app (middleware + routes + errors)
-│   ├── config.js             # env read once, with defaults
+│   ├── index.js            # entry: checks DATABASE_URL, starts the listener
+│   ├── app.js              # builds the Express app (middleware + routes + errors)
+│   ├── config.js           # env read once, with defaults
 │   ├── data/
-│   │   ├── seed.js           # initial data (mirrors the client's mock data)
-│   │   └── store.js          # in-memory repository — the ONLY data-access module
-│   ├── schemas/              # zod validation schemas per resource
-│   ├── controllers/          # request → store → response
-│   ├── routes/               # one router per resource, mounted under /api
-│   ├── middleware/           # validate, notFound, errorHandler
-│   └── lib/                  # ApiError, asyncHandler, response helpers
+│   │   ├── seed.js         # sample data (mirrors the client's mock data)
+│   │   └── store.js        # data-access module — the ONLY place that touches Prisma
+│   ├── schemas/            # zod validation schemas per resource
+│   ├── controllers/        # request → store → response
+│   ├── routes/             # one router per resource, mounted under /api
+│   ├── middleware/         # validate, notFound, errorHandler
+│   └── lib/                # prisma client, ApiError, asyncHandler, response helpers
 └── .env.example
 ```
 
-**Task 3 boundary:** `data/store.js` is the single place that knows data lives
-in memory. Swapping it for Prisma queries is the whole of the database task —
-nothing in `controllers/` or `routes/` changes.
+**Task 3 boundary:** `data/store.js` is the single place that knows where data
+lives. Swapping its internals from in-memory arrays to Prisma queries was the
+whole of the database task — nothing in `controllers/` or `routes/` changed,
+only the store's functions became `async`.

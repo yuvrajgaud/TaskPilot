@@ -7,6 +7,8 @@ PostgreSQL via Prisma without changing any of the routes below.
 - **Base URL:** `http://localhost:4000/api`
 - **Format:** JSON in, JSON out (`Content-Type: application/json`)
 - **Auth:** none yet — added in Task 4 (JWT).
+- **Persistence:** from **Task 3**, data is stored in PostgreSQL via Prisma and
+  survives restarts. See [`../db/`](../db/README.md) for the schema and diagram.
 
 ## Response shape
 
@@ -75,6 +77,10 @@ Combine any of these query parameters:
 Example: `GET /api/tasks?course=c_1&status=todo`.
 
 ## Resources
+
+Every stored record also carries server-managed, read-only fields: a unique
+`id`, plus `createdAt` and `updatedAt` timestamps (added in Task 3). You never
+send these — they come back in responses.
 
 ### Course
 

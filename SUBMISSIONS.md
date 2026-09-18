@@ -56,13 +56,13 @@ happy path.
 
 ## Task 3 — Database Integration
 
-- [ ] PostgreSQL schema via Prisma
-- [ ] Modelled relationships (user → courses → tasks)
-- [ ] Migrations committed
-- [ ] Seed script
-- [ ] Real CRUD against the database
-- [ ] Secure configuration — connection string from env, never hard-coded
-- [ ] Schema diagram in `docs/`
+- [x] PostgreSQL schema via Prisma
+- [x] Modelled relationships (user → courses → tasks)
+- [x] Migrations committed
+- [x] Seed script
+- [x] Real CRUD against the database
+- [x] Secure configuration — connection string from env, never hard-coded
+- [x] Schema diagram in `docs/`
 - [ ] Demo video
 - [ ] Tagged and released
 

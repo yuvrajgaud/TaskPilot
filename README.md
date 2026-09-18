@@ -72,9 +72,21 @@ day is deadline clustering — the thing a list view will never show you.
 - **Docs** — endpoint reference and a Postman collection in
   [`docs/api/`](docs/api/README.md)
 
+### Task 3 — Database (complete)
+
+- **PostgreSQL + Prisma** — the in-memory store is now a real database; data
+  survives restarts
+- **Modelled relationships** — `User → Course → Task`, plus `Activity`, with
+  cascading deletes enforced by the database
+- **Migrations** committed under `server/prisma/migrations/`, and a **seed
+  script** for sample data
+- **Same API** — routes and response shapes are unchanged from Task 2; only the
+  store's internals changed
+- **Secure config** — the connection string is read from the environment, never
+  hard-coded; schema and diagram in [`docs/db/`](docs/db/README.md)
+
 ### Planned
 
-- Task 3 — PostgreSQL persistence via Prisma, with modelled relationships
 - Task 4 — JWT auth and protected routes, plus the **AI Assignment Planner**:
   paste an assignment brief, get subtasks with suggested milestone dates and
   priorities, and add them all in one click
@@ -88,7 +100,7 @@ day is deadline clustering — the thing a list view will never show you.
 | Frontend | React 19, Vite 8, Tailwind CSS 4, React Router 7 |
 | Icons    | Lucide                                      |
 | Backend  | Node.js + Express, zod validation           |
-| Database | PostgreSQL + Prisma _(Task 3)_              |
+| Database | PostgreSQL + Prisma                         |
 | AI       | Claude API _(Task 4)_                       |
 
 Type: `Space Grotesk` for display, `Inter` for body, `JetBrains Mono` for every
@@ -109,20 +121,25 @@ npm run dev
 
 The app runs at `http://localhost:5173`.
 
-### Run the API (Task 2)
+### Run the API (Tasks 2–3)
 
-The REST API is a separate service in `server/`:
+The REST API is a separate service in `server/`. From Task 3 it needs a
+PostgreSQL database — any local or hosted Postgres (e.g. Neon):
 
 ```bash
 cd TaskPilot/server
 npm install
+cp .env.example .env        # set DATABASE_URL (and DIRECT_URL) to your database
+npm run prisma:migrate       # create the tables
+npm run db:seed              # load sample data
 npm run dev
 ```
 
 It listens on `http://localhost:4000/api`. The Task 1 frontend runs on mock data
 and does not need the API — the two are wired together in Task 4. See
-[`docs/api/`](docs/api/README.md) for the full endpoint reference and a Postman
-collection.
+[`docs/api/`](docs/api/README.md) for the endpoint reference and Postman
+collection, and [`docs/db/`](docs/db/README.md) for the database schema and
+diagram.
 
 ### Environment variables
 
@@ -165,17 +182,19 @@ TaskPilot/
 │       ├── hooks/              # useAsync — loading/error/retry lifecycle
 │       ├── lib/                # dates (urgency), selectors, api client, cn
 │       └── data/               # mock data, shaped like the Task 2 API response
-├── server/                     # Express REST API (Task 2)
+├── server/                     # Express REST API (Task 2) + PostgreSQL (Task 3)
+│   ├── prisma/                 # schema, migrations, seed
 │   └── src/
 │       ├── routes/             # one router per resource, mounted under /api
 │       ├── controllers/        # request → store → response
 │       ├── schemas/            # zod validation per resource
 │       ├── middleware/         # validate, notFound, errorHandler
-│       ├── lib/                # ApiError, asyncHandler, response helpers
-│       └── data/               # seed + in-memory store (Prisma in Task 3)
+│       ├── lib/                # prisma client, ApiError, asyncHandler, helpers
+│       └── data/               # seed + store (Prisma over PostgreSQL)
 ├── docs/
 │   ├── screenshots/
-│   └── api/                    # endpoint reference + Postman collection
+│   ├── api/                    # endpoint reference + Postman collection
+│   └── db/                     # database schema + ER diagram
 ├── .env.example
 └── README.md
 ```

@@ -8,12 +8,20 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "db:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^4.22.2",
@@ -22,6 +30,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
-    "oxlint": "^1.80.0"
+    "oxlint": "^1.80.0",
+    "prisma": "^6.19.3"
   }
 }

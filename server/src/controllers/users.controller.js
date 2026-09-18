@@ -4,9 +4,9 @@ import * as store from '../data/store.js'
 
 // Auth lands in Task 4; until then "me" is the single seeded user.
 export const getMe = asyncHandler(async (req, res) => {
-  ok(res, store.getUser())
+  ok(res, await store.getUser())
 })
 
 export const updateMe = asyncHandler(async (req, res) => {
-  ok(res, store.updateUser(req.body))
+  ok(res, await store.updateUser(req.body))
 })

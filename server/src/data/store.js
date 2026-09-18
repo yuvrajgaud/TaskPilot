@@ -1,116 +1,108 @@
-import {
-  seedActivity,
-  seedCourses,
-  seedTasks,
-  seedUser,
-} from './seed.js'
+import { prisma } from '../lib/prisma.js'
 
 /*
-  The data layer — the ONLY module that knows data lives in memory. Controllers
-  call these functions and never touch an array directly, so Task 3 replaces the
-  bodies here with Prisma queries and nothing upstream changes. That boundary is
-  the whole point of keeping it in one file.
+  The data layer — still the ONLY module that knows where data physically lives.
+  In Task 2 that was an in-memory array; in Task 3 it is PostgreSQL via Prisma.
+  Nothing upstream changed except that these functions are now async, so
+  controllers await them: promise in, promise out. Routes are untouched.
 
-  Arrays are copied out of the seed so a server restart resets to a known state
-  and the seed itself is never mutated.
+  Prisma raises P2025 ("record not found") when an update or delete targets a
+  missing row. We translate that into the same null / false "not found" signals
+  the controllers already branch on, so the 404 logic upstream stays identical.
 */
 
-let user = { ...seedUser }
-let courses = seedCourses.map((c) => ({ ...c }))
-let tasks = seedTasks.map((t) => ({ ...t }))
-const activity = seedActivity.map((a) => ({ ...a }))
+const NOT_FOUND = 'P2025'
 
-// Continue the id sequence from the highest seeded number, so new ids never
-// collide with seeded ones (c_1..c_4 → c_5, t_1..t_12 → t_13, ...).
-const highestSuffix = (rows) =>
-  rows.reduce((max, row) => Math.max(max, Number(row.id.split('_')[1]) || 0), 0)
-
-let courseSeq = highestSuffix(courses)
-let taskSeq = highestSuffix(tasks)
+// Pre-auth, the app has a single user. Task 4 replaces this with the
+// authenticated user from the request.
+const currentUser = () => prisma.user.findFirst()
 
 /* ---- courses ---- */
 
-export const listCourses = () => courses.map((c) => ({ ...c }))
+export const listCourses = () =>
+  prisma.course.findMany({ orderBy: { code: 'asc' } })
 
-export const getCourse = (id) => {
-  const course = courses.find((c) => c.id === id)
-  return course ? { ...course } : null
+export const getCourse = (id) => prisma.course.findUnique({ where: { id } })
+
+export const createCourse = async (input) => {
+  const user = await currentUser()
+  return prisma.course.create({ data: { ...input, userId: user.id } })
 }
 
-export const createCourse = (input) => {
-  const course = { id: `c_${++courseSeq}`, ...input }
-  courses.push(course)
-  return { ...course }
+export const updateCourse = async (id, patch) => {
+  try {
+    return await prisma.course.update({ where: { id }, data: patch })
+  } catch (err) {
+    if (err.code === NOT_FOUND) return null
+    throw err
+  }
 }
 
-export const updateCourse = (id, patch) => {
-  const course = courses.find((c) => c.id === id)
-  if (!course) return null
-  Object.assign(course, patch)
-  return { ...course }
-}
-
-export const deleteCourse = (id) => {
-  const before = courses.length
-  courses = courses.filter((c) => c.id !== id)
-  if (courses.length === before) return false
-  // A course owns its tasks, so removing it removes them too — the same
-  // cascade the Task 3 foreign key will enforce at the database level.
-  tasks = tasks.filter((t) => t.courseId !== id)
-  return true
+export const deleteCourse = async (id) => {
+  try {
+    // Tasks are removed by the onDelete: Cascade foreign key.
+    await prisma.course.delete({ where: { id } })
+    return true
+  } catch (err) {
+    if (err.code === NOT_FOUND) return false
+    throw err
+  }
 }
 
 /* ---- tasks ---- */
 
 export const listTasks = ({ course, status, q } = {}) => {
-  let rows = tasks
-  if (course) rows = rows.filter((t) => t.courseId === course)
-  if (status) rows = rows.filter((t) => t.status === status)
+  const where = {}
+  if (course) where.courseId = course
+  if (status) where.status = status
   if (q) {
-    const needle = q.toLowerCase()
-    rows = rows.filter(
-      (t) =>
-        t.title.toLowerCase().includes(needle) ||
-        t.description.toLowerCase().includes(needle),
-    )
+    where.OR = [
+      { title: { contains: q, mode: 'insensitive' } },
+      { description: { contains: q, mode: 'insensitive' } },
+    ]
   }
-  return rows.map((t) => ({ ...t }))
+  return prisma.task.findMany({ where, orderBy: { dueDate: 'asc' } })
 }
 
 export const listTasksByCourse = (courseId) =>
-  tasks.filter((t) => t.courseId === courseId).map((t) => ({ ...t }))
+  prisma.task.findMany({ where: { courseId }, orderBy: { dueDate: 'asc' } })
 
-export const getTask = (id) => {
-  const task = tasks.find((t) => t.id === id)
-  return task ? { ...task } : null
+export const getTask = (id) => prisma.task.findUnique({ where: { id } })
+
+export const createTask = (input) =>
+  prisma.task.create({ data: { ...input, dueDate: new Date(input.dueDate) } })
+
+export const updateTask = async (id, patch) => {
+  // dueDate arrives as an ISO string; the column is a DateTime.
+  const data = patch.dueDate
+    ? { ...patch, dueDate: new Date(patch.dueDate) }
+    : patch
+  try {
+    return await prisma.task.update({ where: { id }, data })
+  } catch (err) {
+    if (err.code === NOT_FOUND) return null
+    throw err
+  }
 }
 
-export const createTask = (input) => {
-  const task = { id: `t_${++taskSeq}`, ...input }
-  tasks.push(task)
-  return { ...task }
-}
-
-export const updateTask = (id, patch) => {
-  const task = tasks.find((t) => t.id === id)
-  if (!task) return null
-  Object.assign(task, patch)
-  return { ...task }
-}
-
-export const deleteTask = (id) => {
-  const before = tasks.length
-  tasks = tasks.filter((t) => t.id !== id)
-  return tasks.length !== before
+export const deleteTask = async (id) => {
+  try {
+    await prisma.task.delete({ where: { id } })
+    return true
+  } catch (err) {
+    if (err.code === NOT_FOUND) return false
+    throw err
+  }
 }
 
 /* ---- user & activity ---- */
 
-export const getUser = () => ({ ...user })
+export const getUser = () => currentUser()
 
-export const updateUser = (patch) => {
-  user = { ...user, ...patch }
-  return { ...user }
+export const updateUser = async (patch) => {
+  const user = await currentUser()
+  return prisma.user.update({ where: { id: user.id }, data: patch })
 }
 
-export const listActivity = () => activity.map((a) => ({ ...a }))
+export const listActivity = () =>
+  prisma.activity.findMany({ orderBy: { createdAt: 'desc' } })

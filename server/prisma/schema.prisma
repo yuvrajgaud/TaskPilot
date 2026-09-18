@@ -1,0 +1,77 @@
+// TaskPilot database schema (Task 3)
+//
+// The in-memory arrays from Task 2 become real PostgreSQL tables here. The API
+// contract does not change: the same fields go in and come out, now persisted.
+// The modelled chain is User -> Course -> Task, with Activity hanging off User.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Used only by `prisma migrate`. On pooled hosts (Neon) migrations must run
+  // over a direct connection, not the PgBouncer pool.
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  initials  String
+  email     String     @unique
+  programme String
+  term      String
+  courses   Course[]
+  activity  Activity[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Course {
+  id         String   @id @default(cuid())
+  code       String
+  title      String
+  instructor String
+  credits    Int
+  // A course belongs to a user; deleting the user removes their courses.
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  // A task belongs to a course; deleting the course cascades to its tasks —
+  // the same ownership the in-memory store enforced by hand in Task 2.
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  // status/priority are kept as strings so the exact API values survive
+  // (Postgres enums can't hold the hyphen in "in-progress"); zod constrains
+  // them to todo | in-progress | done and low | medium | high at the edge.
+  status      String   @default("todo")
+  priority    String   @default("medium")
+  dueDate     DateTime
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  text      String
+  at        String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

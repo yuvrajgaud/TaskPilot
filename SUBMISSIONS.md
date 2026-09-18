@@ -8,7 +8,7 @@ independently of later work.
 | ---- | ------ | ------------------------ | ------ |
 | 1 — Modern Frontend Development | Completed | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Post`](https://lnkd.in/p/dY2FPymM) |
 | 2 — Backend & REST API | Completed | [`task-2`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
-| 3 — Database Integration | In progress | [`task-3`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3) | — |
+| 3 — Database Integration | In progress | [`task-3`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3) | [`Post`](https://lnkd.in/p/gSwKbjsB) |
 | 4 — Final Full-Stack Application | Not started | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | — |
 
 ---
@@ -63,8 +63,8 @@ happy path.
 - [x] Real CRUD against the database
 - [x] Secure configuration — connection string from env, never hard-coded
 - [x] Schema diagram in `docs/`
-- [ ] Demo video
-- [ ] Tagged and released
+- [x] Demo video
+- [x] Tagged and released
 
 **Demo video must show:** creating a record, restarting the server, and the
 record still being there. That is the whole point of the task.

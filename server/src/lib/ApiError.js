@@ -20,5 +20,8 @@ export const badRequest = (message = 'Bad request', details) =>
 export const notFound = (message = 'Resource not found') =>
   new ApiError(404, 'NOT_FOUND', message)
 
-export const conflict = (message = 'Conflict') =>
-  new ApiError(409, 'CONFLICT', message)
+export const unauthorized = (message = 'Authentication required') =>
+  new ApiError(401, 'UNAUTHORIZED', message)
+
+export const conflict = (message = 'Conflict', details) =>
+  new ApiError(409, 'CONFLICT', message, details)

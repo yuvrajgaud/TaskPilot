@@ -21,6 +21,8 @@ model User {
   name      String
   initials  String
   email     String     @unique
+  // bcrypt hash of the password, set at registration. Never selected by the API.
+  password  String
   programme String
   term      String
   courses   Course[]

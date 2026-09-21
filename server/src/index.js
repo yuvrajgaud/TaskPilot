@@ -11,6 +11,16 @@ if (!config.databaseUrl) {
   process.exit(1)
 }
 
+// From Task 4 on, auth tokens are signed with this secret. Refuse to start
+// without it rather than fall back to a guessable default.
+if (!config.jwtSecret) {
+  console.error(
+    'JWT_SECRET is not set. Add a long random string to server/.env — it signs ' +
+      'and verifies the auth tokens added in Task 4. See server/.env.example.',
+  )
+  process.exit(1)
+}
+
 const app = createApp()
 
 app.listen(config.port, () => {

@@ -10,6 +10,7 @@
   Records created later through the API get generated cuid ids.
 */
 
+import bcrypt from 'bcryptjs'
 import { prisma } from '../src/lib/prisma.js'
 import {
   seedActivity,
@@ -18,6 +19,11 @@ import {
   seedUser,
 } from '../src/data/seed.js'
 
+// Demo login for the seeded account. This is sample data for a throwaway dev
+// database, so the credential is intentionally public — real accounts choose
+// their own password at registration, and only the bcrypt hash is ever stored.
+const DEMO_PASSWORD = 'taskpilot123'
+
 async function main() {
   // Clear children before parents to respect the foreign keys.
   await prisma.task.deleteMany()
@@ -25,7 +31,9 @@ async function main() {
   await prisma.course.deleteMany()
   await prisma.user.deleteMany()
 
-  await prisma.user.create({ data: { ...seedUser } })
+  await prisma.user.create({
+    data: { ...seedUser, password: await bcrypt.hash(DEMO_PASSWORD, 10) },
+  })
 
   for (const course of seedCourses) {
     await prisma.course.create({ data: { ...course, userId: seedUser.id } })
@@ -54,6 +62,7 @@ async function main() {
     `Seeded ${seedCourses.length} courses, ${seedTasks.length} tasks and ` +
       `${seedActivity.length} activity items for ${seedUser.name}.`,
   )
+  console.log(`Demo login — ${seedUser.email} / ${DEMO_PASSWORD}`)
 }
 
 main()

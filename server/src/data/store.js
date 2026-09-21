@@ -2,57 +2,79 @@ import { prisma } from '../lib/prisma.js'
 
 /*
   The data layer — still the ONLY module that knows where data physically lives.
-  In Task 2 that was an in-memory array; in Task 3 it is PostgreSQL via Prisma.
-  Nothing upstream changed except that these functions are now async, so
-  controllers await them: promise in, promise out. Routes are untouched.
+  Task 2 used an in-memory array; Task 3 moved to PostgreSQL via Prisma; Task 4
+  makes every query user-aware. A userId (from the authenticated request) is
+  passed in, and courses, tasks and activity are all scoped to that owner, so one
+  student can never read or change another's data.
 
-  Prisma raises P2025 ("record not found") when an update or delete targets a
-  missing row. We translate that into the same null / false "not found" signals
-  the controllers already branch on, so the 404 logic upstream stays identical.
+  A task's owner is reached through its course (task -> course -> user), so task
+  queries filter on the related course's userId rather than duplicating a userId
+  on the task itself.
+
+  Prisma raises P2025 ("record not found") on an update/delete of a missing row.
+  We scope writes with updateMany / deleteMany and report "not found" through a
+  zero count — keeping the same null / false signals the controllers branch on,
+  and making "someone else's id" indistinguishable from "no such id".
 */
 
-const NOT_FOUND = 'P2025'
-
-// Pre-auth, the app has a single user. Task 4 replaces this with the
-// authenticated user from the request.
-const currentUser = () => prisma.user.findFirst()
-
-/* ---- courses ---- */
-
-export const listCourses = () =>
-  prisma.course.findMany({ orderBy: { code: 'asc' } })
-
-export const getCourse = (id) => prisma.course.findUnique({ where: { id } })
-
-export const createCourse = async (input) => {
-  const user = await currentUser()
-  return prisma.course.create({ data: { ...input, userId: user.id } })
+// The user fields the API may return — never the password hash.
+const USER_PUBLIC = {
+  id: true,
+  name: true,
+  initials: true,
+  email: true,
+  programme: true,
+  term: true,
+  createdAt: true,
+  updatedAt: true,
 }
 
-export const updateCourse = async (id, patch) => {
-  try {
-    return await prisma.course.update({ where: { id }, data: patch })
-  } catch (err) {
-    if (err.code === NOT_FOUND) return null
-    throw err
-  }
+/* ---- auth & user ---- */
+
+// Includes the password hash — used only by login, to compare. Every other read
+// goes through getUser, which never selects the password.
+export const findUserByEmail = (email) =>
+  prisma.user.findUnique({ where: { email } })
+
+export const createUser = (data) =>
+  prisma.user.create({ data, select: USER_PUBLIC })
+
+export const getUser = (userId) =>
+  prisma.user.findUnique({ where: { id: userId }, select: USER_PUBLIC })
+
+export const updateUser = (userId, patch) =>
+  prisma.user.update({ where: { id: userId }, data: patch, select: USER_PUBLIC })
+
+/* ---- courses (scoped to the owner) ---- */
+
+export const listCourses = (userId) =>
+  prisma.course.findMany({ where: { userId }, orderBy: { code: 'asc' } })
+
+export const getCourse = (userId, id) =>
+  prisma.course.findFirst({ where: { id, userId } })
+
+export const createCourse = (userId, input) =>
+  prisma.course.create({ data: { ...input, userId } })
+
+export const updateCourse = async (userId, id, patch) => {
+  const { count } = await prisma.course.updateMany({
+    where: { id, userId },
+    data: patch,
+  })
+  if (count === 0) return null
+  return prisma.course.findUnique({ where: { id } })
 }
 
-export const deleteCourse = async (id) => {
-  try {
-    // Tasks are removed by the onDelete: Cascade foreign key.
-    await prisma.course.delete({ where: { id } })
-    return true
-  } catch (err) {
-    if (err.code === NOT_FOUND) return false
-    throw err
-  }
+export const deleteCourse = async (userId, id) => {
+  // Tasks are removed by the onDelete: Cascade foreign key.
+  const { count } = await prisma.course.deleteMany({ where: { id, userId } })
+  return count > 0
 }
 
-/* ---- tasks ---- */
+/* ---- tasks (scoped through the owning course) ---- */
 
-export const listTasks = ({ course, status, q } = {}) => {
-  const where = {}
+export const listTasks = (userId, { course, status, q } = {}) => {
+  const where = { course: { userId } }
   if (course) where.courseId = course
   if (status) where.status = status
   if (q) {
@@ -64,45 +86,42 @@ export const listTasks = ({ course, status, q } = {}) => {
   return prisma.task.findMany({ where, orderBy: { dueDate: 'asc' } })
 }
 
-export const listTasksByCourse = (courseId) =>
-  prisma.task.findMany({ where: { courseId }, orderBy: { dueDate: 'asc' } })
+export const listTasksByCourse = (userId, courseId) =>
+  prisma.task.findMany({
+    where: { courseId, course: { userId } },
+    orderBy: { dueDate: 'asc' },
+  })
 
-export const getTask = (id) => prisma.task.findUnique({ where: { id } })
+export const getTask = (userId, id) =>
+  prisma.task.findFirst({ where: { id, course: { userId } } })
 
 export const createTask = (input) =>
   prisma.task.create({ data: { ...input, dueDate: new Date(input.dueDate) } })
 
-export const updateTask = async (id, patch) => {
+export const updateTask = async (userId, id, patch) => {
   // dueDate arrives as an ISO string; the column is a DateTime.
   const data = patch.dueDate
     ? { ...patch, dueDate: new Date(patch.dueDate) }
     : patch
-  try {
-    return await prisma.task.update({ where: { id }, data })
-  } catch (err) {
-    if (err.code === NOT_FOUND) return null
-    throw err
-  }
+  const { count } = await prisma.task.updateMany({
+    where: { id, course: { userId } },
+    data,
+  })
+  if (count === 0) return null
+  return prisma.task.findUnique({ where: { id } })
 }
 
-export const deleteTask = async (id) => {
-  try {
-    await prisma.task.delete({ where: { id } })
-    return true
-  } catch (err) {
-    if (err.code === NOT_FOUND) return false
-    throw err
-  }
+export const deleteTask = async (userId, id) => {
+  const { count } = await prisma.task.deleteMany({
+    where: { id, course: { userId } },
+  })
+  return count > 0
 }
 
-/* ---- user & activity ---- */
+/* ---- activity ---- */
 
-export const getUser = () => currentUser()
-
-export const updateUser = async (patch) => {
-  const user = await currentUser()
-  return prisma.user.update({ where: { id: user.id }, data: patch })
-}
-
-export const listActivity = () =>
-  prisma.activity.findMany({ orderBy: { createdAt: 'desc' } })
+export const listActivity = (userId) =>
+  prisma.activity.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  })

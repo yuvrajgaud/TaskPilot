@@ -4,34 +4,34 @@ import { notFound } from '../lib/ApiError.js'
 import * as store from '../data/store.js'
 
 export const list = asyncHandler(async (req, res) => {
-  ok(res, await store.listCourses())
+  ok(res, await store.listCourses(req.user.id))
 })
 
 export const getOne = asyncHandler(async (req, res) => {
-  const course = await store.getCourse(req.params.id)
+  const course = await store.getCourse(req.user.id, req.params.id)
   if (!course) throw notFound('That course could not be found.')
   ok(res, course)
 })
 
 export const create = asyncHandler(async (req, res) => {
-  created(res, await store.createCourse(req.body))
+  created(res, await store.createCourse(req.user.id, req.body))
 })
 
 export const update = asyncHandler(async (req, res) => {
-  const course = await store.updateCourse(req.params.id, req.body)
+  const course = await store.updateCourse(req.user.id, req.params.id, req.body)
   if (!course) throw notFound('That course could not be found.')
   ok(res, course)
 })
 
 export const remove = asyncHandler(async (req, res) => {
-  const deleted = await store.deleteCourse(req.params.id)
+  const deleted = await store.deleteCourse(req.user.id, req.params.id)
   if (!deleted) throw notFound('That course could not be found.')
   noContent(res)
 })
 
 export const listCourseTasks = asyncHandler(async (req, res) => {
-  if (!(await store.getCourse(req.params.id))) {
+  if (!(await store.getCourse(req.user.id, req.params.id))) {
     throw notFound('That course could not be found.')
   }
-  ok(res, await store.listTasksByCourse(req.params.id))
+  ok(res, await store.listTasksByCourse(req.user.id, req.params.id))
 })

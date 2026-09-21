@@ -2,11 +2,11 @@ import { asyncHandler } from '../lib/asyncHandler.js'
 import { ok } from '../lib/http.js'
 import * as store from '../data/store.js'
 
-// Auth lands in Task 4; until then "me" is the single seeded user.
+// "me" is whoever the token identifies — set by the authenticate middleware.
 export const getMe = asyncHandler(async (req, res) => {
-  ok(res, await store.getUser())
+  ok(res, await store.getUser(req.user.id))
 })
 
 export const updateMe = asyncHandler(async (req, res) => {
-  ok(res, await store.updateUser(req.body))
+  ok(res, await store.updateUser(req.user.id, req.body))
 })

@@ -25,3 +25,9 @@ export const unauthorized = (message = 'Authentication required') =>
 
 export const conflict = (message = 'Conflict', details) =>
   new ApiError(409, 'CONFLICT', message, details)
+
+export const badGateway = (message = 'Upstream service error') =>
+  new ApiError(502, 'BAD_GATEWAY', message)
+
+export const serviceUnavailable = (message = 'Service unavailable') =>
+  new ApiError(503, 'SERVICE_UNAVAILABLE', message)

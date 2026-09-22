@@ -21,6 +21,16 @@ if (!config.jwtSecret) {
   process.exit(1)
 }
 
+// The AI planner is optional: without a key the server still runs and every
+// other route works, but POST /api/planner returns 503. Warn so that is not a
+// mystery during development.
+if (!config.geminiApiKey) {
+  console.warn(
+    'GEMINI_API_KEY is not set — the AI planner (POST /api/planner) is disabled. ' +
+      'Add a free key from aistudio.google.com/apikey to server/.env to enable it.',
+  )
+}
+
 const app = createApp()
 
 app.listen(config.port, () => {

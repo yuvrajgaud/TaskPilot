@@ -101,7 +101,7 @@ day is deadline clustering — the thing a list view will never show you.
 | Icons    | Lucide                                      |
 | Backend  | Node.js + Express, zod validation           |
 | Database | PostgreSQL + Prisma                         |
-| AI       | Claude API _(Task 4)_                       |
+| AI       | Google Gemini API _(Task 4)_                |
 
 Type: `Space Grotesk` for display, `Inter` for body, `JetBrains Mono` for every
 numeric reading.

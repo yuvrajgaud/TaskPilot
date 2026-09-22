@@ -3,7 +3,7 @@ import 'dotenv/config'
 /*
   Every environment-dependent value is read once, here, and nowhere else.
   Task 2 needs no secrets, so sensible defaults let `npm start` run with no
-  .env file at all. Task 3 and 4 add DATABASE_URL, JWT_SECRET and the Claude
+  .env file at all. Task 3 and 4 add DATABASE_URL, JWT_SECRET and the Gemini
   key to this same object.
 */
 export const config = {
@@ -12,4 +12,6 @@ export const config = {
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   databaseUrl: process.env.DATABASE_URL,
   jwtSecret: process.env.JWT_SECRET,
+  geminiApiKey: process.env.GEMINI_API_KEY,
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
 }

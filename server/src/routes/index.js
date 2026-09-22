@@ -4,6 +4,7 @@ import tasks from './tasks.routes.js'
 import users from './users.routes.js'
 import activity from './activity.routes.js'
 import auth from './auth.routes.js'
+import planner from './planner.routes.js'
 import { authenticate } from '../middleware/authenticate.js'
 
 /*
@@ -22,5 +23,6 @@ router.use('/courses', authenticate, courses)
 router.use('/tasks', authenticate, tasks)
 router.use('/users', authenticate, users)
 router.use('/activity', authenticate, activity)
+router.use('/planner', authenticate, planner)
 
 export default router

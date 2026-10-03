@@ -1,0 +1,30 @@
+# Render Blueprint for the TaskPilot API (Express + Prisma).
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo. Secrets are
+# marked `sync: false`, so Render prompts for them in the UI and they never live
+# in the repo. The client deploys separately on Netlify (see netlify.toml).
+services:
+  - type: web
+    name: taskpilot-api
+    runtime: node
+    rootDir: server
+    plan: free
+    # Generate the Prisma client, then apply pending migrations to the database
+    # before the new version serves traffic.
+    buildCommand: npm install && npx prisma generate && npx prisma migrate deploy
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Secrets — set these in the Render dashboard, never in the repo.
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      # The deployed client origin, for CORS — e.g. https://taskpilot.netlify.app
+      - key: CLIENT_URL
+        sync: false

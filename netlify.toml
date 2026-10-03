@@ -1,0 +1,18 @@
+# Netlify build config for the TaskPilot client (Vite + React SPA).
+# The repo root holds both client/ and server/, so `base` points Netlify at the
+# client workspace and `publish` is the Vite build output inside it.
+[build]
+  base = "client"
+  command = "npm run build"
+  publish = "dist"
+
+# React Router owns routing on the client, so every path must fall back to
+# index.html — otherwise a hard refresh on /tasks is a 404 from the static host.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Set VITE_API_URL in Netlify's UI (Site settings -> Environment variables) to
+# the deployed API, e.g. https://taskpilot-api.onrender.com/api — Vite inlines
+# it at build time, so changing it needs a redeploy.

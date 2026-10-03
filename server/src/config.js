@@ -9,7 +9,13 @@ import 'dotenv/config'
 export const config = {
   port: Number(process.env.PORT) || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  // A comma-separated allowlist, so the deployed client and local dev can both
+  // be permitted. CORS (app.js) refuses every origin not in this list once the
+  // API is public — Task 2 left CORS fully open.
+  clientUrls: (process.env.CLIENT_URL || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   databaseUrl: process.env.DATABASE_URL,
   jwtSecret: process.env.JWT_SECRET,
   geminiApiKey: process.env.GEMINI_API_KEY,

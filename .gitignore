@@ -24,4 +24,4 @@ Thumbs.db
 *.swp
 
 # Local tooling
-.claude/settings.local.json
+.claude/

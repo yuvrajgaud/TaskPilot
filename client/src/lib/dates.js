@@ -67,3 +67,20 @@ export function formatDate(date) {
 export function dateFromToday(offset) {
   return new Date(startOfToday().getTime() + offset * DAY_MS).toISOString()
 }
+
+/**
+ * Relative phrasing for a past instant: "just now", "5m ago", "3h ago", "2d ago",
+ * then a short date once it's a week old. The activity log stores an ISO
+ * timestamp; this is what turns it into the glanceable line the log shows.
+ */
+export function relativeTime(iso) {
+  const secs = Math.round((Date.now() - new Date(iso).getTime()) / 1000)
+  if (secs < 45) return 'just now'
+  const mins = Math.round(secs / 60)
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.round(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.round(hrs / 24)
+  if (days < 7) return `${days}d ago`
+  return formatDate(iso)
+}

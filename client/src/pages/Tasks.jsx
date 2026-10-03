@@ -1,9 +1,11 @@
-import { ListChecks, SearchX } from 'lucide-react'
+import { ListChecks, Pencil, SearchX, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { TaskFormModal } from '../components/tasks/TaskFormModal'
 import { TaskRow } from '../components/tasks/TaskRow'
-import { Button } from '../components/ui/Button'
+import { Button, IconButton } from '../components/ui/Button'
 import { FilterGroup, SearchField } from '../components/ui/Controls'
+import { ConfirmDialog } from '../components/ui/Modal'
 import { Panel } from '../components/ui/Panel'
 import { EmptyState, ErrorState, SkeletonRow } from '../components/ui/States'
 import { useAsync } from '../hooks/useAsync'
@@ -19,6 +21,11 @@ export function Tasks() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('all')
+  // null (closed), 'new' (create), or a task object (edit).
+  const [editing, setEditing] = useState(null)
+  const [deleting, setDeleting] = useState(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const [courses, tasks] = data ?? [[], []]
   const courseId = searchParams.get('course') ?? 'all'
@@ -27,9 +34,7 @@ export function Tasks() {
 
   const scoped = useMemo(
     () =>
-      courseId === 'all'
-        ? tasks
-        : tasks.filter((t) => t.courseId === courseId),
+      courseId === 'all' ? tasks : tasks.filter((t) => t.courseId === courseId),
     [tasks, courseId],
   )
 
@@ -75,6 +80,33 @@ export function Tasks() {
     setCourse('all')
   }
 
+  const onSaved = () => {
+    setEditing(null)
+    reload()
+  }
+
+  const askDelete = (task) => {
+    setDeleteError('')
+    setDeleting(task)
+  }
+
+  const confirmDelete = async () => {
+    setDeleteBusy(true)
+    setDeleteError('')
+    try {
+      await api.deleteTask(deleting.id)
+      setDeleting(null)
+      reload()
+    } catch (err) {
+      setDeleteError(err.message || 'Could not delete this task. Try again.')
+    } finally {
+      setDeleteBusy(false)
+    }
+  }
+
+  // Adding from a course-scoped view should pre-pick that course.
+  const defaultCourseId = courseId === 'all' ? undefined : courseId
+
   return (
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -90,7 +122,9 @@ export function Tasks() {
             onChange={setQuery}
             placeholder="Search tasks"
           />
-          <Button size="sm">Add task</Button>
+          <Button size="sm" onClick={() => setEditing('new')}>
+            Add task
+          </Button>
         </div>
       </header>
 
@@ -136,7 +170,11 @@ export function Tasks() {
               icon={ListChecks}
               title="No tasks yet"
               hint="Add an assignment and it will appear on your approach strip straight away."
-              action={<Button size="sm">Add your first task</Button>}
+              action={
+                <Button size="sm" onClick={() => setEditing('new')}>
+                  Add your first task
+                </Button>
+              }
             />
           ) : results.length === 0 ? (
             <EmptyState
@@ -156,6 +194,24 @@ export function Tasks() {
                   key={task.id}
                   task={task}
                   courseCode={codeOf(task.courseId)}
+                  actions={
+                    <>
+                      <IconButton
+                        label={`Edit ${task.title}`}
+                        onClick={() => setEditing(task)}
+                        className="size-7 bg-panel"
+                      >
+                        <Pencil className="size-3.5" aria-hidden />
+                      </IconButton>
+                      <IconButton
+                        label={`Delete ${task.title}`}
+                        onClick={() => askDelete(task)}
+                        className="size-7 bg-panel"
+                      >
+                        <Trash2 className="size-3.5" aria-hidden />
+                      </IconButton>
+                    </>
+                  }
                 />
               ))}
             </ul>
@@ -167,6 +223,26 @@ export function Tasks() {
         <p className="tabular text-[11px] text-mute">
           {results.length} of {tasks.length} tasks
         </p>
+      )}
+
+      {editing && (
+        <TaskFormModal
+          task={editing === 'new' ? undefined : editing}
+          courses={courses}
+          defaultCourseId={defaultCourseId}
+          onClose={() => setEditing(null)}
+          onSaved={onSaved}
+        />
+      )}
+      {deleting && (
+        <ConfirmDialog
+          title="Delete task"
+          message={`Delete "${deleting.title}"? This can't be undone.`}
+          onConfirm={confirmDelete}
+          onClose={() => setDeleting(null)}
+          busy={deleteBusy}
+          error={deleteError}
+        />
       )}
     </div>
   )

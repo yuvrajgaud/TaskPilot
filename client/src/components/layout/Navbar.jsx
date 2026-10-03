@@ -1,27 +1,17 @@
-import { Menu, X } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../../auth/useAuth'
 import { cn } from '../../lib/cn'
-import { currentUser } from '../../data/mockData'
+import { IconButton } from '../ui/Button'
+import { Mark } from '../ui/Mark'
 
 const NAV = [
   { to: '/', label: 'Dashboard' },
   { to: '/courses', label: 'Courses' },
   { to: '/tasks', label: 'Tasks' },
+  { to: '/plan', label: 'Plan' },
 ]
-
-/** Heading-indicator mark: a course line with the aircraft on it. */
-function Mark() {
-  return (
-    <svg viewBox="0 0 16 16" className="size-4 text-ink" aria-hidden>
-      <path d="M1 13h14" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
-      <path
-        d="M8 1.5 11.5 10H4.5L8 1.5Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
 
 function navClass({ isActive }) {
   return cn(
@@ -31,11 +21,19 @@ function navClass({ isActive }) {
 }
 
 export function Navbar() {
+  const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
 
   // Navigating away has to close the drawer, or it covers the page you just
   // asked for. Closing from the click that navigates keeps it in one place.
   const close = () => setOpen(false)
+
+  // Signing out flips auth state to null; RequireAuth then redirects to /login,
+  // so there's nothing to navigate here — just close the drawer first.
+  const signOut = () => {
+    close()
+    logout()
+  }
 
   return (
     <header className="sticky top-0 z-20 border-b border-rule bg-surface/90 backdrop-blur">
@@ -76,8 +74,16 @@ export function Navbar() {
               )
             }
           >
-            {currentUser.initials}
+            {user?.initials}
           </NavLink>
+
+          <IconButton
+            label="Sign out"
+            onClick={signOut}
+            className="hidden sm:inline-flex"
+          >
+            <LogOut className="size-4" aria-hidden />
+          </IconButton>
 
           <button
             type="button"
@@ -112,6 +118,14 @@ export function Navbar() {
               {item.label}
             </NavLink>
           ))}
+          <button
+            type="button"
+            onClick={signOut}
+            className="flex w-full items-center gap-2 border-t border-rule py-3 text-sm font-medium text-graphite"
+          >
+            <LogOut className="size-4" aria-hidden />
+            Sign out
+          </button>
         </nav>
       )}
     </header>

@@ -1,7 +1,10 @@
 import { ArrowLeft, ChevronRight } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { TaskFormModal } from '../components/tasks/TaskFormModal'
 import { DueBadge, PriorityTicks, StatusBadge } from '../components/ui/Badges'
 import { Button } from '../components/ui/Button'
+import { ConfirmDialog } from '../components/ui/Modal'
 import { Panel, PanelHeader } from '../components/ui/Panel'
 import { EmptyState, ErrorState, Skeleton } from '../components/ui/States'
 import { useAsync } from '../hooks/useAsync'
@@ -24,10 +27,17 @@ const STATUS_LABEL = { todo: 'To do', 'in-progress': 'In progress', done: 'Done'
  */
 export function TaskDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { data, error, loading, reload } = useAsync(
     () => Promise.all([api.getTask(id), api.getCourses(), api.getTasks()]),
     [id],
   )
+  const [editing, setEditing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [actionError, setActionError] = useState('')
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   if (loading) return <DetailSkeleton />
 
@@ -63,6 +73,40 @@ export function TaskDetail() {
 
   const band = urgencyOf(task.dueDate, task.status)
   const days = daysUntil(task.dueDate)
+  const done = task.status === 'done'
+
+  // Mark done / reopen is a single-field status flip; a failure surfaces inline
+  // beneath the actions rather than replacing the whole view.
+  const toggleDone = async () => {
+    setBusy(true)
+    setActionError('')
+    try {
+      await api.updateTask(task.id, { status: done ? 'todo' : 'done' })
+      reload()
+    } catch (err) {
+      setActionError(err.message || 'Could not update this task. Try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const onSaved = () => {
+    setEditing(false)
+    reload()
+  }
+
+  // A delete here leaves nothing to show, so on success we return to the list.
+  const confirmDelete = async () => {
+    setDeleteBusy(true)
+    setDeleteError('')
+    try {
+      await api.deleteTask(task.id)
+      navigate('/tasks')
+    } catch (err) {
+      setDeleteError(err.message || 'Could not delete this task. Try again.')
+      setDeleteBusy(false)
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -96,23 +140,35 @@ export function TaskDetail() {
           </p>
         )}
 
-        <div className="mt-6 flex gap-2">
-          <Button
-            size="sm"
-            disabled
-            title="Editing arrives with the API in Task 2"
-          >
-            Mark as done
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Button size="sm" onClick={toggleDone} disabled={busy}>
+            {busy ? 'Saving…' : done ? 'Reopen' : 'Mark as done'}
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            disabled
-            title="Editing arrives with the API in Task 2"
+            onClick={() => setEditing(true)}
+            disabled={busy}
           >
             Edit
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setDeleteError('')
+              setDeleting(true)
+            }}
+            disabled={busy}
+          >
+            Delete
+          </Button>
         </div>
+        {actionError && (
+          <p role="alert" className="mt-3 text-sm text-urgent">
+            {actionError}
+          </p>
+        )}
       </Panel>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -176,6 +232,25 @@ export function TaskDetail() {
             )}
           </Panel>
         </section>
+      )}
+
+      {editing && (
+        <TaskFormModal
+          task={task}
+          courses={courses}
+          onClose={() => setEditing(false)}
+          onSaved={onSaved}
+        />
+      )}
+      {deleting && (
+        <ConfirmDialog
+          title="Delete task"
+          message={`Delete "${task.title}"? This can't be undone.`}
+          onConfirm={confirmDelete}
+          onClose={() => setDeleting(false)}
+          busy={deleteBusy}
+          error={deleteError}
+        />
       )}
     </div>
   )

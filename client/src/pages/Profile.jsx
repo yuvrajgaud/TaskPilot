@@ -1,20 +1,36 @@
+import { useState } from 'react'
+import { useAuth } from '../auth/useAuth'
 import { StatReadout } from '../components/dashboard/StatReadout'
-import { Panel, PanelHeader } from '../components/ui/Panel'
+import { ProfileFormModal } from '../components/profile/ProfileFormModal'
 import { Button } from '../components/ui/Button'
-import { ErrorState } from '../components/ui/States'
-import { Skeleton } from '../components/ui/States'
+import { Panel, PanelHeader } from '../components/ui/Panel'
+import { ErrorState, Skeleton } from '../components/ui/States'
 import { useAsync } from '../hooks/useAsync'
 import { api } from '../lib/api'
 import { taskStats } from '../lib/selectors'
 
 export function Profile() {
+  const { applyUser } = useAuth()
   const { data, error, loading, reload } = useAsync(
     () => Promise.all([api.getUser(), api.getCourses(), api.getTasks()]),
     [],
   )
+  const [editing, setEditing] = useState(false)
 
   const [user, courses, tasks] = data ?? [null, [], []]
   const stats = taskStats(tasks)
+
+  // Programme and term are optional, so join only what's set — an empty account
+  // shouldn't render a stray " · ".
+  const meta = user ? [user.programme, user.term].filter(Boolean).join(' · ') : ''
+
+  // The saved user carries freshly recomputed initials. Push it into the auth
+  // context so the nav avatar updates at once, then refetch this page's copy.
+  const onSaved = (saved) => {
+    applyUser(saved)
+    setEditing(false)
+    reload()
+  }
 
   if (error) {
     return (
@@ -48,11 +64,13 @@ export function Profile() {
             <div className="min-w-0 flex-1">
               <h2 className="text-lg">{user.name}</h2>
               <p className="truncate text-sm">{user.email}</p>
-              <p className="mt-0.5 text-xs text-mute">
-                {user.programme} · {user.term}
-              </p>
+              {meta && <p className="mt-0.5 text-xs text-mute">{meta}</p>}
             </div>
-            <Button variant="secondary" size="sm">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setEditing(true)}
+            >
               Edit profile
             </Button>
           </div>
@@ -78,14 +96,13 @@ export function Profile() {
         </div>
       </section>
 
-      <Panel className="p-5">
-        <p className="eyebrow mb-2">Note</p>
-        <p className="text-sm">
-          Accounts are read-only in Task 1 — the profile is rendered from mock
-          data. Registration, login and protected routes arrive in Task 4, once
-          the API and database layers are in place.
-        </p>
-      </Panel>
+      {editing && user && (
+        <ProfileFormModal
+          user={user}
+          onClose={() => setEditing(false)}
+          onSaved={onSaved}
+        />
+      )}
     </div>
   )
 }

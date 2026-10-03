@@ -1,8 +1,12 @@
 import { CalendarClock, FolderOpen } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../auth/useAuth'
 import { ApproachStrip } from '../components/dashboard/ApproachStrip'
 import { StatReadout } from '../components/dashboard/StatReadout'
 import { CourseCard } from '../components/courses/CourseCard'
+import { CourseFormModal } from '../components/courses/CourseFormModal'
+import { TaskFormModal } from '../components/tasks/TaskFormModal'
 import { TaskRow } from '../components/tasks/TaskRow'
 import { Button } from '../components/ui/Button'
 import { Panel, PanelHeader } from '../components/ui/Panel'
@@ -12,7 +16,6 @@ import {
   SkeletonCard,
   SkeletonRow,
 } from '../components/ui/States'
-import { currentUser } from '../data/mockData'
 import { useAsync } from '../hooks/useAsync'
 import { api } from '../lib/api'
 import { byUrgency } from '../lib/selectors'
@@ -21,10 +24,12 @@ import { taskStats } from '../lib/selectors'
 const DUE_NEXT_LIMIT = 6
 
 export function Dashboard() {
+  const { user } = useAuth()
   const { data, error, loading, reload } = useAsync(
     () => Promise.all([api.getCourses(), api.getTasks(), api.getActivity()]),
     [],
   )
+  const [modal, setModal] = useState(null)
 
   const [courses, tasks, activity] = data ?? [[], [], []]
   const stats = taskStats(tasks)
@@ -37,6 +42,13 @@ export function Dashboard() {
   const codeOf = (courseId) =>
     courses.find((c) => c.id === courseId)?.code ?? '—'
 
+  // A create closes the modal and refetches, so the new item lands in every
+  // panel it belongs to at once.
+  const onSaved = () => {
+    setModal(null)
+    reload()
+  }
+
   if (error) {
     return (
       <Panel>
@@ -48,9 +60,9 @@ export function Dashboard() {
   return (
     <div className="space-y-7">
       <header>
-        <p className="eyebrow">{currentUser.term}</p>
+        <p className="eyebrow">{user.term || 'This semester'}</p>
         <h1 className="mt-1.5 text-2xl sm:text-[28px]">
-          {greeting()}, {currentUser.name.split(' ')[0]}
+          {greeting()}, {user.name.split(' ')[0]}
         </h1>
         <p className="mt-1 text-sm">{summaryLine(stats, loading)}</p>
       </header>
@@ -109,7 +121,9 @@ export function Dashboard() {
                 }
                 action={
                   tasks.length === 0 ? (
-                    <Button size="sm">Add a task</Button>
+                    <Button size="sm" onClick={() => setModal('task')}>
+                      Add a task
+                    </Button>
                   ) : undefined
                 }
               />
@@ -180,7 +194,11 @@ export function Dashboard() {
               icon={FolderOpen}
               title="No courses yet"
               hint="Add your first course and TaskPilot will start plotting its deadlines."
-              action={<Button size="sm">Add a course</Button>}
+              action={
+                <Button size="sm" onClick={() => setModal('course')}>
+                  Add a course
+                </Button>
+              }
             />
           </Panel>
         ) : (
@@ -191,6 +209,17 @@ export function Dashboard() {
           </div>
         )}
       </section>
+
+      {modal === 'course' && (
+        <CourseFormModal onClose={() => setModal(null)} onSaved={onSaved} />
+      )}
+      {modal === 'task' && (
+        <TaskFormModal
+          courses={courses}
+          onClose={() => setModal(null)}
+          onSaved={onSaved}
+        />
+      )}
     </div>
   )
 }

@@ -9,7 +9,7 @@ independently of later work.
 | 1 — Modern Frontend Development | Completed | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Post`](https://lnkd.in/p/dY2FPymM) |
 | 2 — Backend & REST API | Completed | [`task-2`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
 | 3 — Database Integration | Completed | [`task-3`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3) | [`Post`](https://lnkd.in/p/gSwKbjsB) |
-| 4 — Final Full-Stack Application | In progress | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | — |
+| 4 — Final Full-Stack Application | Completed | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | [`Post`](https://www.linkedin.com/) |
 
 ---
 
@@ -73,15 +73,18 @@ record still being there. That is the whole point of the task.
 
 ## Task 4 — Final Full-Stack Application
 
-- [ ] Registration and login
-- [ ] JWT auth with protected routes
-- [ ] Password hashing
-- [ ] Frontend wired to the real API
-- [ ] AI Assignment Planner
-- [ ] Deployment _(optional per the guide)_
-- [ ] Final README with full setup instructions
-- [ ] Capstone demo video
-- [ ] Tagged and released
+- [x] Registration and login
+- [x] JWT auth with protected routes
+- [x] Password hashing
+- [x] Frontend wired to the real API
+- [x] AI Assignment Planner
+- [x] Deployment _(optional per the guide)_
+- [x] Final README with full setup instructions
+- [x] Capstone demo video
+- [x] Tagged and released
 
 **Demo video must lead with the AI planner**, not with login. Auth is expected;
 the planner is the differentiator.
+
+**Deployed:** client https://aitaskpilot.netlify.app · API
+https://taskpilot-api-911z.onrender.com/api/health

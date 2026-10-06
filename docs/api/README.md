@@ -1,14 +1,17 @@
 # TaskPilot API
 
-REST API for TaskPilot — users, courses and assignments. Built in **Task 2**
-with Express. Task 2 stores data in memory; **Task 3** swaps that for
-PostgreSQL via Prisma without changing any of the routes below.
+REST API for TaskPilot — users, courses and assignments, with JWT auth and an AI
+study planner. Built in **Task 2** with Express, given PostgreSQL persistence in
+**Task 3**, and secured with auth plus the Gemini-backed planner in **Task 4**.
 
-- **Base URL:** `http://localhost:4000/api`
+- **Base URL:** `http://localhost:4000/api` (production:
+  `https://taskpilot-api-911z.onrender.com/api`)
 - **Format:** JSON in, JSON out (`Content-Type: application/json`)
-- **Auth:** none yet — added in Task 4 (JWT).
-- **Persistence:** from **Task 3**, data is stored in PostgreSQL via Prisma and
-  survives restarts. See [`../db/`](../db/README.md) for the schema and diagram.
+- **Auth:** JWT. Register or log in, then send
+  `Authorization: Bearer <token>`. Every route except `/health` and the two auth
+  endpoints requires it — a missing or invalid token is a `401`.
+- **Persistence:** PostgreSQL via Prisma; data survives restarts. See
+  [`../db/`](../db/README.md) for the schema and diagram.
 
 ## Response shape
 
@@ -46,23 +49,26 @@ page — so clients can handle failures uniformly:
 
 ## Endpoints
 
-| Method | Path                     | Purpose                              |
-| ------ | ------------------------ | ------------------------------------ |
-| GET    | `/health`                | Liveness check                       |
-| GET    | `/users/me`              | The current user                     |
-| PATCH  | `/users/me`              | Update the current user's profile    |
-| GET    | `/courses`               | List all courses                     |
-| POST   | `/courses`               | Create a course                      |
-| GET    | `/courses/:id`           | Get one course                       |
-| PATCH  | `/courses/:id`           | Update a course                      |
-| DELETE | `/courses/:id`           | Delete a course (and its tasks)      |
-| GET    | `/courses/:id/tasks`     | List tasks for a course              |
-| GET    | `/tasks`                 | List tasks (filterable — see below)  |
-| POST   | `/tasks`                 | Create a task                        |
-| GET    | `/tasks/:id`             | Get one task                         |
-| PATCH  | `/tasks/:id`             | Update a task                        |
-| DELETE | `/tasks/:id`             | Delete a task                        |
-| GET    | `/activity`              | Recent activity feed                 |
+| Method | Path                     | Auth | Purpose                              |
+| ------ | ------------------------ | ---- | ------------------------------------ |
+| GET    | `/health`                | —    | Liveness check                       |
+| POST   | `/auth/register`         | —    | Create an account → `{ user, token }` |
+| POST   | `/auth/login`            | —    | Sign in → `{ user, token }`          |
+| GET    | `/users/me`              | ✅   | The current user                     |
+| PATCH  | `/users/me`              | ✅   | Update the current user's profile    |
+| GET    | `/courses`               | ✅   | List the user's courses              |
+| POST   | `/courses`               | ✅   | Create a course                      |
+| GET    | `/courses/:id`           | ✅   | Get one course                       |
+| PATCH  | `/courses/:id`           | ✅   | Update a course                      |
+| DELETE | `/courses/:id`           | ✅   | Delete a course (and its tasks)      |
+| GET    | `/courses/:id/tasks`     | ✅   | List tasks for a course              |
+| GET    | `/tasks`                 | ✅   | List tasks (filterable — see below)  |
+| POST   | `/tasks`                 | ✅   | Create a task                        |
+| GET    | `/tasks/:id`             | ✅   | Get one task                         |
+| PATCH  | `/tasks/:id`             | ✅   | Update a task                        |
+| DELETE | `/tasks/:id`             | ✅   | Delete a task                        |
+| GET    | `/activity`              | ✅   | Recent activity feed                 |
+| POST   | `/planner`               | ✅   | Generate an AI study plan            |
 
 ### GET /tasks — filters
 
@@ -123,6 +129,57 @@ Unknown fields are rejected.
 A `courseId` that doesn't exist returns **400** (`BAD_REQUEST`), not a silent
 orphan.
 
+## Auth
+
+Register once, then send the returned token on every subsequent request.
+
+```bash
+# Register — returns { data: { user, token } }
+curl -X POST http://localhost:4000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Yuvraj Gaud","email":"you@example.com","password":"at-least-8-chars"}'
+
+# Log in
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"at-least-8-chars"}'
+
+# Use the token on a protected route
+curl http://localhost:4000/api/courses -H "Authorization: Bearer <token>"
+```
+
+Passwords are hashed with bcrypt (never stored in plain text). A protected route
+without a valid token is a **401**.
+
+| Field      | Rules                                       |
+| ---------- | ------------------------------------------- |
+| `name`     | string, 2–80 chars, required (register)     |
+| `email`    | valid email, required, unique               |
+| `password` | string, 8–100 chars                         |
+
+## AI planner
+
+`POST /planner` reads the signed-in student's own courses and unfinished tasks
+and asks Google Gemini for a day-by-day study plan. The request body carries
+preferences only — never the data to plan.
+
+```bash
+curl -X POST http://localhost:4000/api/planner \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"horizonDays":7}'
+```
+
+| Field         | Rules                                        |
+| ------------- | -------------------------------------------- |
+| `horizonDays` | integer 1–30, defaults to `7`                |
+| `hoursPerDay` | number 0.5–16, optional                      |
+| `focus`       | string ≤ 500 chars, optional                 |
+
+Requires at least one unfinished task, else **400**. If the server has no
+Gemini key, **503**. Upstream failures surface as **502/503** with a clean
+message — the model's raw error is never returned.
+
 ## Examples
 
 Create a course:
@@ -158,8 +215,9 @@ npm run dev     # nodemon, restarts on change
 # or: npm start
 ```
 
-The API listens on `http://localhost:4000/api`. No `.env` is required for
-Task 2 — `server/.env.example` documents the variables the later tasks add.
+The API listens on `http://localhost:4000/api`. See `server/.env.example` for
+the variables it needs — `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`,
+`GEMINI_API_KEY` and `CLIENT_URL`.
 
 ## Postman
 

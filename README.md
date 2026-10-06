@@ -17,7 +17,9 @@ Development Internship**.
 | 1 — Modern Frontend | React dashboard, responsive, mock data | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Watch Demo`](https://drive.google.com/file/d/1sTDb_GyMZmjCKK99tLfIPM1-ssDgszKH/view?usp=sharing) | [`Post`](https://lnkd.in/p/dY2FPymM) |
 | 2 — Backend & REST API | Express API for users, courses, tasks | [`task-2`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2) | [`Watch Demo`](https://drive.google.com/file/d/1yV3P_roeZPKjbtFU-1SQEh7L3qzU2LP9/view?usp=drive_link) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
 | 3 — Database Integration | PostgreSQL + Prisma persistence | [`task-3`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3) | [`Watch Demo`](https://drive.google.com/file/d/1jKqG1TthyloWTCRFvvxNFHrTtTVR9KRr/view?usp=sharing) | [`Post`](https://lnkd.in/p/gSwKbjsB) |
-| 4 — Final Full-Stack App | Auth, integration, AI planner, deployed | _pending_ | _pending_ | _pending_ |
+| 4 — Final Full-Stack App | JWT auth, live API, AI planner, deployed | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | [`Watch Demo`](https://drive.google.com/) | [`Post`](https://www.linkedin.com/) |
+
+**Live app:** https://aitaskpilot.netlify.app · **API:** https://taskpilot-api-911z.onrender.com/api/health
 
 ---
 
@@ -85,11 +87,21 @@ day is deadline clustering — the thing a list view will never show you.
 - **Secure config** — the connection string is read from the environment, never
   hard-coded; schema and diagram in [`docs/db/`](docs/db/README.md)
 
-### Planned
+### Task 4 — Auth, integration & AI planner (complete)
 
-- Task 4 — JWT auth and protected routes, plus the **AI Assignment Planner**:
-  paste an assignment brief, get subtasks with suggested milestone dates and
-  priorities, and add them all in one click
+- **Accounts & JWT auth** — register and sign in; passwords hashed with
+  bcrypt, sessions carried as a stateless JWT. Protected routes reject
+  requests without a valid token (`401`).
+- **Per-user data** — every course, task and activity is scoped to the
+  signed-in student; one account can never read or mutate another's data.
+- **Frontend wired to the real API** — the Task 1 mock store is gone; every
+  view now reads and writes through the live REST API.
+- **AI Assignment Planner** — asks Google Gemini to turn your unfinished
+  assignments into a day-by-day study plan, using structured JSON output so
+  the response is always the shape the UI expects.
+- **Production-hardened API** — Helmet security headers, a CORS allowlist,
+  and tiered rate limiting (strict on auth, quota-guarded on the planner).
+- **Deployed** — server on Render, database on Neon, client on Netlify.
 
 ---
 
@@ -121,42 +133,52 @@ npm run dev
 
 The app runs at `http://localhost:5173`.
 
-### Run the API (Tasks 2–3)
+### Run the API
 
-The REST API is a separate service in `server/`. From Task 3 it needs a
-PostgreSQL database — any local or hosted Postgres (e.g. Neon):
+The REST API is a separate service in `server/`. It needs a PostgreSQL
+database — any local or hosted Postgres (e.g. Neon) — and a Google Gemini API
+key for the AI planner:
 
 ```bash
 cd TaskPilot/server
 npm install
-cp .env.example .env        # set DATABASE_URL (and DIRECT_URL) to your database
-npm run prisma:migrate       # create the tables
-npm run db:seed              # load sample data
+cp .env.example .env         # set DATABASE_URL, DIRECT_URL, JWT_SECRET, GEMINI_API_KEY, CLIENT_URL
+npm run prisma:migrate        # create the tables
+npm run db:seed               # load sample data
 npm run dev
 ```
 
-It listens on `http://localhost:4000/api`. The Task 1 frontend runs on mock data
-and does not need the API — the two are wired together in Task 4. See
-[`docs/api/`](docs/api/README.md) for the endpoint reference and Postman
-collection, and [`docs/db/`](docs/db/README.md) for the database schema and
-diagram.
+It listens on `http://localhost:4000/api`. The client talks to it through
+`VITE_API_URL` (see `client/.env.example`) — set it to `http://localhost:4000/api`
+for local development. See [`docs/api/`](docs/api/README.md) for the endpoint
+reference and Postman collection, and [`docs/db/`](docs/db/README.md) for the
+database schema and diagram.
 
 ### Environment variables
 
-Copy `.env.example` to `.env` and fill in your own values:
+Copy each `.env.example` to `.env` and fill in your own values:
 
 ```bash
-cp .env.example .env
+cp server/.env.example server/.env
+cp client/.env.example client/.env
 ```
 
-Task 1 runs entirely on mock data and needs no environment variables. The file
-documents what each later task will require. **Never commit `.env`** — it is
-gitignored, and `.env.example` holds placeholders only.
+The **server** needs `DATABASE_URL` + `DIRECT_URL` (Postgres), `JWT_SECRET`
+(a long random string), `GEMINI_API_KEY` and `CLIENT_URL` (the client origin,
+for CORS). The **client** needs `VITE_API_URL` (the API base URL). **Never
+commit `.env`** — it is gitignored, and `.env.example` holds placeholders only.
+
+### Deploy
+
+Deployed as three services, all free-tier: the database on **Neon**, the API on
+**Render** (`render.yaml`), and the client on **Netlify** (`netlify.toml`). Set
+the server's env vars in the Render dashboard and the client's `VITE_API_URL` in
+Netlify's — secrets never live in the repo.
 
 ### Seeing the loading, empty, and error states
 
-Task 1 runs on a mock API client with simulated latency, so all three states are
-real code paths rather than mockups. Force any of them with a query parameter:
+Every dynamic view on the mock client had loading, empty and error states, kept
+in the live client too. Force any of them with a query parameter:
 
 | URL                       | Shows                       |
 | ------------------------- | --------------------------- |
@@ -170,38 +192,42 @@ real code paths rather than mockups. Force any of them with a query parameter:
 
 ```
 TaskPilot/
-├── client/                     # React frontend (Task 1)
+├── client/                     # React frontend
 │   └── src/
 │       ├── components/
-│       │   ├── layout/         # Navbar, Layout
-│       │   ├── ui/             # Panel, Button, Badges, ProgressBar, States, Controls
+│       │   ├── layout/         # Navbar, Layout, AuthShell
+│       │   ├── ui/             # Panel, Button, Badges, Form, Modal, States
 │       │   ├── dashboard/      # ApproachStrip, StatReadout
-│       │   ├── courses/        # CourseCard
-│       │   └── tasks/          # TaskRow
-│       ├── pages/              # Dashboard, Courses, Tasks, Profile, NotFound
+│       │   ├── courses/        # CourseCard, CourseFormModal
+│       │   ├── tasks/          # TaskRow, TaskFormModal
+│       │   ├── profile/        # ProfileFormModal
+│       │   └── planner/        # PlanView
+│       ├── auth/               # AuthProvider, RequireAuth, token context
+│       ├── pages/              # Dashboard, Courses, Tasks, TaskDetail, Planner, Profile, Login, Register
 │       ├── hooks/              # useAsync — loading/error/retry lifecycle
-│       ├── lib/                # dates (urgency), selectors, api client, cn
-│       └── data/               # mock data, shaped like the Task 2 API response
-├── server/                     # Express REST API (Task 2) + PostgreSQL (Task 3)
+│       └── lib/                # api client, dates (urgency), form errors, cn
+├── server/                     # Express REST API + PostgreSQL + JWT auth + AI planner
 │   ├── prisma/                 # schema, migrations, seed
 │   └── src/
 │       ├── routes/             # one router per resource, mounted under /api
 │       ├── controllers/        # request → store → response
 │       ├── schemas/            # zod validation per resource
-│       ├── middleware/         # validate, notFound, errorHandler
-│       ├── lib/                # prisma client, ApiError, asyncHandler, helpers
-│       └── data/               # seed + store (Prisma over PostgreSQL)
+│       ├── middleware/         # validate, auth, rate limiting, notFound, errorHandler
+│       ├── lib/                # prisma client, gemini client, planner, ApiError, helpers
+│       └── data/               # store (Prisma over PostgreSQL)
 ├── docs/
 │   ├── screenshots/
 │   ├── api/                    # endpoint reference + Postman collection
 │   └── db/                     # database schema + ER diagram
-├── .env.example
+├── render.yaml                 # Render blueprint (API)
+├── netlify.toml                # Netlify config (client)
 └── README.md
 ```
 
 **Design note:** `client/src/lib/api.js` is the only file that knows where data
 comes from. Every component consumes it through the same promise-based
-interface, so swapping mock data for the real Task 2 API is a one-file change.
+interface — so wiring the Task 1 mock store to the real Task 2 API in Task 4 was
+a one-file change; no component had to move.
 
 ---
 

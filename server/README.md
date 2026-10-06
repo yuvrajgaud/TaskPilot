@@ -13,15 +13,60 @@ design decisions live in [`../docs/db/`](../docs/db/README.md).
 ```bash
 cd server
 npm install
-cp .env.example .env       # set DATABASE_URL (and DIRECT_URL) — see below
+cp .env.example .env       # set DATABASE_URL, DIRECT_URL, JWT_SECRET, GEMINI_API_KEY, CLIENT_URL
 npm run prisma:migrate     # create the tables
 npm run db:seed            # load sample data
 npm run dev                # nodemon — restarts on change
 # or: npm start
 ```
 
-Listens on `http://localhost:4000/api`. From Task 3 on, a `DATABASE_URL` is
-required — the server exits on startup with a clear message if it is missing.
+Listens on `http://localhost:4000/api`. A `DATABASE_URL` and `JWT_SECRET` are
+required — the server exits on startup with a clear message if either is
+missing. `GEMINI_API_KEY` is optional: without it the rest of the API works and
+the planner endpoint answers `503`.
+
+## Auth (Task 4)
+
+Accounts and sessions are stateless — no server-side session store.
+
+- **Register / login:** `POST /api/auth/register` and `POST /api/auth/login`
+  return `{ data: { user, token } }`. Passwords are hashed with **bcrypt**;
+  only the hash is ever stored.
+- **Token:** a signed **JWT** (`jsonwebtoken`) carrying the user id. The client
+  sends it as `Authorization: Bearer <token>`.
+- **Protected routes:** everything except `/health` and the two auth endpoints
+  requires a valid token; missing or invalid → `401`.
+- **Per-user isolation:** each query is scoped to the token's user, so one
+  account can never read or modify another's courses, tasks or activity.
+
+## AI planner (Task 4)
+
+`POST /api/planner` reads the signed-in student's own courses and unfinished
+tasks from the database and asks **Google Gemini** for a day-by-day study plan.
+
+- The request body carries preferences only (`horizonDays`, `hoursPerDay`,
+  `focus`) — never the data to plan, so the client can't plan someone else's work.
+- The model is constrained with a JSON Schema (`responseJsonSchema`), so it
+  returns structured JSON the UI can render directly, not free-form prose.
+- Default model is `gemini-3-flash-preview`; override with the `GEMINI_MODEL`
+  env var. Upstream failures map to `502`/`503` — no SDK error ever leaks out.
+
+## Hardening (Task 4)
+
+- **Helmet** — security headers (CSP, HSTS, `nosniff`, frame options) on every response.
+- **CORS allowlist** — only the origin(s) in `CLIENT_URL` (comma-separated) are
+  allowed; every other origin is refused.
+- **Rate limiting** — lenient on the API as a whole, strict on `/auth`
+  (brute-force), and quota-guarded on `/planner` (protects the Gemini key).
+- **`trust proxy`** — set so limits key on the real client IP behind a host.
+
+## Deploy (Task 4)
+
+The API deploys to **Render** from [`../render.yaml`](../render.yaml), with the
+database on **Neon**. Env vars are set in the Render dashboard, never the repo —
+failing which the blueprint marks each secret `sync: false`. The build runs
+`prisma generate` and `prisma migrate deploy` before the new version serves
+traffic.
 
 ## Database (Task 3)
 

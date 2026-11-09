@@ -17,7 +17,7 @@ Development Internship**.
 | 1 — Modern Frontend | React dashboard, responsive, mock data | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Watch Demo`](https://drive.google.com/file/d/1sTDb_GyMZmjCKK99tLfIPM1-ssDgszKH/view?usp=sharing) | [`Post`](https://lnkd.in/p/dY2FPymM) |
 | 2 — Backend & REST API | Express API for users, courses, tasks | [`task-2`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2) | [`Watch Demo`](https://drive.google.com/file/d/1yV3P_roeZPKjbtFU-1SQEh7L3qzU2LP9/view?usp=drive_link) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
 | 3 — Database Integration | PostgreSQL + Prisma persistence | [`task-3`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3) | [`Watch Demo`](https://drive.google.com/file/d/1jKqG1TthyloWTCRFvvxNFHrTtTVR9KRr/view?usp=sharing) | [`Post`](https://lnkd.in/p/gSwKbjsB) |
-| 4 — Final Full-Stack App | JWT auth, live API, AI planner, deployed | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | [`Watch Demo`](https://drive.google.com/) | [`Post`](https://www.linkedin.com/) |
+| 4 — Final Full-Stack App | JWT auth, live API, AI planner, deployed | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | [`Watch Demo`](https://drive.google.com/file/d/1ShYtimICGgoviD6tN7AzPUrGDJKbuht_/view?usp=sharing) | [`Post`](https://lnkd.in/p/dRRJ3ZAK) |
 
 **Live app:** https://aitaskpilot.netlify.app · **API:** https://taskpilot-api-911z.onrender.com/api/health
 

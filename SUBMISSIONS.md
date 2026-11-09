@@ -9,7 +9,7 @@ independently of later work.
 | 1 — Modern Frontend Development | Completed | [`task-1`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-1) | [`Post`](https://lnkd.in/p/dY2FPymM) |
 | 2 — Backend & REST API | Completed | [`task-2`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-2) | [`Post`](https://lnkd.in/p/d-4Ez92u) |
 | 3 — Database Integration | Completed | [`task-3`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-3) | [`Post`](https://lnkd.in/p/gSwKbjsB) |
-| 4 — Final Full-Stack Application | Completed | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | [`Post`](https://www.linkedin.com/) |
+| 4 — Final Full-Stack Application | Completed | [`task-4`](https://github.com/yuvrajgaud/TaskPilot/releases/tag/task-4) | [`Post`](https://lnkd.in/p/dRRJ3ZAK) |
 
 ---
 
